@@ -21,7 +21,7 @@ My_Allgather(void *sendbuf, int sendcount, MPI_Datatype sendtype,
   int i;
   int source, dest;
   int myrank, nprocs;
-  int ext, lb, size;
+  MPI_Aint ext, lb, size;
   void *ptr;
 
   MPI_Comm_size(comm, &nprocs);
