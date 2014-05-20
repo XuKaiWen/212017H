@@ -8,9 +8,40 @@
 #include <mpi.h>
 
 /* 2^23 B = 8 MB */
-#define N 24
+#define N 25
 /* 通讯次数 */
-#define M 1
+#define M 10
+
+void pingpong(int size, double *time, int myrank);
+void output(double *time);
+
+int main(int argc, char *argv[])
+{
+  int i, size;
+  int myrank;
+  double time[N];
+
+  /* 初始化 mpi */
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
+  /* 计算平均用时 */
+  size = 1;
+  for ( i = 0; i < N; ++i)
+    {
+      pingpong(size, &time[i], myrank);
+      size *= 2;
+    }
+
+  /* 输出结果 */
+  if (myrank == 0)
+    {
+      output(time);
+    }
+
+  MPI_Finalize();
+  return 0;
+} /* main */
 
 /*
   得到传输 size 大小的数据块的平均时间。
@@ -29,6 +60,7 @@ void pingpong(int size, double *time, int myrank)
   buff = malloc((size_t) size);
 
   /* 消息发送部分，计算时间 */
+  /* 时间由 0 进程来计算。 */
   if (myrank == 0)
     {
       gettimeofday(&st,NULL);
@@ -40,10 +72,10 @@ void pingpong(int size, double *time, int myrank)
         }
 
       gettimeofday(&et,NULL);
+
       /* 计算平均时间 */
-      /* avg_time = elps_time/M; */
       *time = (et.tv_sec+et.tv_usec*1e-6-st.tv_sec-st.tv_usec*1e-6)/M;
-      *time *= 1000;		/* 这样单位是 ms */
+      *time *= 1000;            /* 这样单位是 ms */
     }
   else if (myrank == 1)
     {
@@ -56,7 +88,7 @@ void pingpong(int size, double *time, int myrank)
 
   free(buff);
   return;
-}
+} /* pingpong */
 
 
 /*
@@ -65,8 +97,7 @@ void pingpong(int size, double *time, int myrank)
 void output(double *time)
 {
   int i,j, size;
-  /* len 每一行的个数 */
-  int len = 7;
+  int len = 7;	   /* len 每一行的个数 */
 
   printf("\n------------------------------------------------------------------------\n");
   printf("通信次数 %d  时间单位 (ms)\n", M);
@@ -85,8 +116,10 @@ void output(double *time)
             printf(" %6dB", size);
           else if (i < 20)
             printf(" %5dKB", size/1024);
-          else
+          else if (i < 30)
             printf(" %5dMB", size/(1024*1024));
+	  else
+	    printf(" *******");
 
           fflush(stdout);
           size *= 2;
@@ -102,37 +135,4 @@ void output(double *time)
     } while (j < N);
 
   return;
-}
-
-int main(int argc, char *argv[])
-{
-  int i, size;
-  int myrank;
-  double time[N];
-  /* 时间统一的由 0 进程来计算。 */
-
-  /* 初始化 mpi */
-  MPI_Init(&argc, &argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-
-  /* 计算平均用时 */
-  /* 这个循环每个进程都要运行，具体的运行方式不同。 */
-  size = 1;
-  for ( i = 0; i < N; ++i)
-    {
-      /* pingpong(size, &time[i]， myrank， comm); */
-      pingpong(size, &time[i], myrank);
-      size *= 2;
-    }
-
-  /* 输出结果 */
-  if (myrank == 0)
-    {
-      output(time);
-    }
-
-  MPI_Finalize();
-  return 0;
-}
-
-
+} /* output */

@@ -1,7 +1,7 @@
 CC	= mpicc
 CFLAG	= -g
 
-SRC	= sequc_hello mpisum ring pingpong
+SRC	= sequc_hello mpisum ring pingpong allgather
 
 all : $(SRC)
 
@@ -14,6 +14,3 @@ clean:
 cleanall:
 	rm -f *~ *.o a.out
 	rm -f $(SRC)
-
-
-

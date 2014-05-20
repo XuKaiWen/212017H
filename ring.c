@@ -40,10 +40,6 @@ int main(int argc, char *argv[])
       MPI_Send(&vol, 1, MPI_INT, 1, 0, comm);
       MPI_Recv(&recv_vol, 1, MPI_INT, nprocs-1, 0, comm, &status);
 
-      if (recv_vol == vol)
-        fprintf (stderr,"proc %d: ring test passed.\n",myrank);
-      else
-        fprintf (stderr,"proc %d: ring test failed.\n",myrank);
     }
   else
     {
@@ -51,6 +47,14 @@ int main(int argc, char *argv[])
       fprintf (stderr,"proc %d: the number is = %d.\n",myrank, vol);
       MPI_Send(&vol, 1, MPI_INT, (myrank+1)%nprocs, 0, comm);
     }
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  if (myrank == 0){
+    if (recv_vol == vol)
+      fprintf (stderr,"proc %d: ring test passed.\n",myrank);
+    else
+      fprintf (stderr,"proc %d: ring test failed.\n",myrank);
+  }
 
   MPI_Finalize();
   return 0;

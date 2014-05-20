@@ -1,9 +1,0 @@
-$ mpirun -np -8 ./sequc_hello
-myrank = 0: Hello, world!
-myrank = 1: Hello, world!
-myrank = 2: Hello, world!
-myrank = 3: Hello, world!
-myrank = 4: Hello, world!
-myrank = 5: Hello, world!
-myrank = 6: Hello, world!
-myrank = 7: Hello, world!
